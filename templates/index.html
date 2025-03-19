@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Q&A</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            text-align: center;
+        }
+        input, button {
+            margin-top: 10px;
+            padding: 10px;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload PDF and Ask a Question</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="pdf_files" id="pdf_files" multiple required>
+        <br>
+        <input type="text" name="question" id="question" placeholder="Enter your question" required>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+    
+    <div id="response">
+        <h2>Answer:</h2>
+        <p id="answerText"></p>
+    </div>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            const pdfFiles = document.getElementById("pdf_files").files;
+            for (let i = 0; i < pdfFiles.length; i++) {
+                formData.append("pdf_files", pdfFiles[i]);
+            }
+            formData.append("question", document.getElementById("question").value);
+            
+            try {
+                const response = await fetch("/upload_and_ask", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById("response").style.display = "block";
+                    document.getElementById("answerText").innerText = data.answer;
+                } else {
+                    alert(data.error || "An error occurred");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to process request.");
+            }
+        });
+    </script>
+</body>
+</html>
